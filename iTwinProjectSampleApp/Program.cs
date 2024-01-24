@@ -6,6 +6,7 @@
 +--------------------------------------------------------------------------------------*/
 
 using System;
+using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Threading.Tasks;
@@ -15,7 +16,9 @@ namespace ItwinProjectSampleApp
     class Program
         {
         static async Task Main (string[] args)          
-            {         
+            {
+            string token = await Login();
+
             DisplayMainIndex();
 
             // Retrieve the token using the TryIt button. https://developer.bentley.com/api-groups/administration/apis/projects/operations/create-project/
@@ -56,6 +59,14 @@ namespace ItwinProjectSampleApp
             var email = token.Claims?.FirstOrDefault(x => x.Type.Equals("Email", StringComparison.OrdinalIgnoreCase))?.Value;
             return email;
             }
-        #endregion
+
+
+        private static async Task<string> Login ()
+        {
+            var epm = new EndpointManager(null);
+            var token = await epm.MakeLoginCall();
+            return "";
         }
+        #endregion
+    }
     }

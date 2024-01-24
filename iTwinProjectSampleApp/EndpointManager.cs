@@ -7,6 +7,7 @@
 
 using ItwinProjectSampleApp.Models;
 using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
@@ -27,9 +28,63 @@ namespace ItwinProjectSampleApp
             {
             client.DefaultRequestHeaders.Clear();
             client.DefaultRequestHeaders.Add("Accept", "application/vnd.bentley.itwin-platform.v1+json");
-            client.DefaultRequestHeaders.Add("Authorization", token);
+            if (token!=null)
+                {
+                client.DefaultRequestHeaders.Add("Authorization", token);
+                }
             }
         #endregion
+
+        internal async Task<string> MakeLoginCall()
+            {
+            //curl https://ims.bentley.com/connect/token -X POST
+            //  --data-urlencode grant_type=client_credentials
+            //  --data-urlencode client_id=<client_id>
+            //  --data-urlencode client_secret=<client_secret>
+            //  --data-urlencode scope=<scope>
+
+            var args = new Dictionary<string, string>();
+            args.Add("grant_type", "client_credentials");
+            args.Add("client_id", "service-i21UlBzAs1owjbwO9J9vdc5nD");
+            args.Add("client_secret", "n2SRRG8o4EUV1O4ugWqM8JxDhh4Y2BIK1ebGReHjg0dLgEi13cc6ByKpuysoy5KPBSoxshkD7225X3M64rrhwA==");
+            args.Add("scope", "imodels:read");
+
+            HttpContent body = new FormUrlEncodedContent(args);
+
+            using (var response = await client.PostAsync("https://ims.bentley.com/connect/token", body))
+                {
+                if (response.StatusCode == HttpStatusCode.TooManyRequests)
+                    {
+                    // You should implement retry logic for TooManyRequests (429) errors and possibly others like GatewayTimeout or ServiceUnavailable
+                    }
+
+                var responseContent = await response.Content.ReadAsStringAsync();
+
+                if (!string.IsNullOrEmpty(responseContent))
+                    {
+                    var responsePayload = JObject.Parse(responseContent);
+                    if (response.StatusCode == HttpStatusCode.OK)
+                        {
+                        // Successful response. Deserialize the object returned. This is the full representation
+                        // of the new instance that was just created. It will contain the new instance Id.
+                        var token = responsePayload["access_token"].ToString();
+                        client.DefaultRequestHeaders.Add("Authorization", token);
+                        }
+                    else
+                        {
+                        // There was an error. Deserialize the error details and return.
+                        var error = responsePayload["error"]?.ToObject<ErrorDetails>();
+                        Console.WriteLine(error);
+                        }
+                    }
+                else
+                    {
+                    Console.WriteLine("Empty response");
+                    }
+                }
+            return "hhhh";
+            }
+
 
         internal async Task<HttpGetResponseMessage<T>> MakeGetCall<T> (string relativeUrl, Dictionary<string, string> customHeaders = null)
             {
