@@ -81,5 +81,31 @@ namespace iTwinProjectSampleApp
             return responseMsg.Instance;
             }
 
+        public async Task<namedVersion> GetLatestNamedVersion(string imodelId)
+            {
+            var header = new Dictionary<string, string>();
+            header.Add("Prefer", "return=minimal");
+
+            var request = $"/imodels/{imodelId}/namedversions?$orderBy=changesetIndex desc&$top=1";
+
+            var responseMsg = await _endpointMgr.MakeGetCall<namedVersion>(request, header);
+            if (responseMsg.Status != HttpStatusCode.OK)
+                throw new Exception($"{responseMsg.Status}: {responseMsg.ErrorDetails?.Code} - {responseMsg.ErrorDetails?.Message}");
+
+            Console.WriteLine($" [Retrieved {responseMsg.Instances?.Count} iModels] (SUCCESS)");
+
+            return responseMsg.Instances?.FirstOrDefault();
+            }
+
+        public async Task<checkpoint> GetNamedVersionCheckpoint (string imodelId, string namedVersionId)
+            {
+            var request = $"/imodels/{imodelId}/namedversions/{namedVersionId}/checkpoint";
+
+            var responseMsg = await _endpointMgr.MakeGetSingleCall<checkpoint>(request);
+            if (responseMsg.Status != HttpStatusCode.OK)
+                throw new Exception($"{responseMsg.Status}: {responseMsg.ErrorDetails?.Code} - {responseMsg.ErrorDetails?.Message}");
+
+            return responseMsg.Instance;
+            }
         }
     }

@@ -6,11 +6,13 @@
 +--------------------------------------------------------------------------------------*/
 
 using iTwinProjectSampleApp;
+using iTwinProjectSampleApp.Models;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace ItwinProjectSampleApp
@@ -40,6 +42,7 @@ namespace ItwinProjectSampleApp
 
                 if (imodel.displayName.StartsWith("IFC_ATP"))
                     {
+                    ///
                     var chset = await iModelsMan.GetLatestChangeset(imodel.id);
                     if (chset!=null)
                         {
@@ -53,6 +56,16 @@ namespace ItwinProjectSampleApp
                             var chkpt = await iModelsMan.GetCheckpoint(chkptLink);
                             var namedChset = await iModelsMan.GetChangeset(imodel.id, chkpt.changesetId);
                             }
+                        }
+
+                    ///
+                    namedVersion namedVers = await iModelsMan.GetLatestNamedVersion(imodel.id);
+                    if (namedVers != null)
+                        {
+                        Console.WriteLine($"Named version {namedVers.id} : {namedVers.displayName} changeset {namedVers.changesetIndex}");
+                        var chkpt = await iModelsMan.GetNamedVersionCheckpoint(imodel.id, namedVers.id);
+                        var href = chkpt?._links?.download?.href;
+                        Console.WriteLine(href);
                         }
 
                     break;
