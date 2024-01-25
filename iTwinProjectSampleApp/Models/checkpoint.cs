@@ -6,10 +6,9 @@ using System.Threading.Tasks;
 
 namespace iTwinProjectSampleApp.Models
     {
-    internal class changeset
+    internal class checkpoint
         {
-        public string id { get; set; }
-        public int index { get; set; }
+        public string changesetId { get; set; }
         public Links _links { get; set; }
         }
     }

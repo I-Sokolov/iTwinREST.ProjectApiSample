@@ -38,13 +38,25 @@ namespace ItwinProjectSampleApp
                 { 
                 Console.WriteLine($"iModel: {imodel.displayName}\n");
 
-                var changesets = await iModelsMan.GetChangesets(imodel);
-                foreach (var cs in changesets) 
+                if (imodel.displayName.StartsWith("IFC_ATP"))
                     {
-                    Console.WriteLine($"Changeset #{cs.index} id {cs.id}");
-                    }
+                    var chset = await iModelsMan.GetLatestChangeset(imodel.id);
+                    if (chset!=null)
+                        {
+                        Console.WriteLine($"Changeset #{chset.index} id {chset.id}");
+                        Console.WriteLine($"    download: {chset._links?.download?.href}");
+                        Console.WriteLine($"    checkpoint: {chset._links?.currentOrPrecedingCheckpoint?.href}");
 
-                break;
+                        var chkptLink = chset._links.currentOrPrecedingCheckpoint?.href;
+                        if (chkptLink != null)
+                            {
+                            var chkpt = await iModelsMan.GetCheckpoint(chkptLink);
+                            var namedChset = await iModelsMan.GetChangeset(imodel.id, chkpt.changesetId);
+                            }
+                        }
+
+                    break;
+                    }
                 }
 
             // Execute Project workflow. This will create/update/query an iTwin project

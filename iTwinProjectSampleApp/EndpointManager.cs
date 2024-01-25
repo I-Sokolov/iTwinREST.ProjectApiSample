@@ -139,13 +139,17 @@ namespace ItwinProjectSampleApp
             return responseMsg;
             }
 
-        internal async Task<HttpGetSingleResponseMessage<T>> MakeGetSingleCall<T> (string relativeUrl, Dictionary<string, string> customHeaders = null)
+        internal async Task<HttpGetSingleResponseMessage<T>> MakeGetSingleCall<T> (string url, Dictionary<string, string> customHeaders = null)
             {
-            // Add any additional headers if applicable
+            // Construct full url and then make the GET call
+            var request = url.StartsWith("http") ? url : $"{API_BASE_URL}{url}";
+
+            _client.DefaultRequestHeaders.Clear();
+            _client.DefaultRequestHeaders.Add("Authorization", _token);
+            _client.DefaultRequestHeaders.Add("Accept", "application/vnd.bentley.itwin-platform.v2+json");
             AddCustomHeaders(_client, customHeaders);
 
-            // Construct full url and then make the GET call
-            using var response = await _client.GetAsync($"{API_BASE_URL}{relativeUrl}");
+            using var response = await _client.GetAsync(request);
 
             if ( response.StatusCode == HttpStatusCode.TooManyRequests )
                 {
@@ -160,7 +164,7 @@ namespace ItwinProjectSampleApp
             if ( response.StatusCode == HttpStatusCode.OK )
                 {
                 // Successful response. Deserialize the object returned.
-                var containerName = typeof(T).Name.ToLower();
+                var containerName = typeof(T).Name;
                 responseMsg.Instance = responsePayload[containerName].ToObject<T>();
                 }
             else
