@@ -5,8 +5,10 @@
 |
 +--------------------------------------------------------------------------------------*/
 
+using iTwinProjectSampleApp;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Threading.Tasks;
@@ -25,8 +27,13 @@ namespace ItwinProjectSampleApp
             //Console.Clear();
             //DisplayMainIndex();
 
-            await using var projectMgr = new ProjectManager();
-            await projectMgr.Login();
+            //await using var projectMgr = new ProjectManager();
+            //await projectMgr.Login();
+            var iModelsMan = new iModelsManager();
+            var res = await iModelsMan.Login();
+            Trace.Assert(res);
+
+            var iModels = await iModelsMan.GetiModels();
 
             // Execute Project workflow. This will create/update/query an iTwin project
             //await projectMgr.ProjectManagementWorkflow();

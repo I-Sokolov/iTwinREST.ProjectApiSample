@@ -20,14 +20,15 @@ namespace ItwinProjectSampleApp
     {
     internal class EndpointManager
         {
-        private static readonly HttpClient client = new();
         private const string API_BASE_URL = "https://api.bentley.com";
+
+        private static readonly HttpClient client = new();
 
         #region Constructors
         internal EndpointManager()
             {
             client.DefaultRequestHeaders.Clear();
-            client.DefaultRequestHeaders.Add("Accept", "application/vnd.bentley.itwin-platform.v1+json");
+            client.DefaultRequestHeaders.Add("Accept", "application/vnd.bentley.itwin-platform.v2+json");
             }
         #endregion
 
@@ -40,19 +41,24 @@ namespace ItwinProjectSampleApp
             //  --data-urlencode client_secret=<client_secret>
             //  --data-urlencode scope=<scope>
 
+            const string LOGIN_URL = "https://ims.bentley.com/connect/token";
+            const string CLIENT_ID = "service-i21UlBzAs1owjbwO9J9vdc5nD";
+            const string CLIENT_SECRET = "n2SRRG8o4EUV1O4ugWqM8JxDhh4Y2BIK1ebGReHjg0dLgEi13cc6ByKpuysoy5KPBSoxshkD7225X3M64rrhwA==";
+
             var args = new Dictionary<string, string>();
             args.Add("grant_type", "client_credentials");
-            args.Add("client_id", "service-i21UlBzAs1owjbwO9J9vdc5nD");
-            args.Add("client_secret", "n2SRRG8o4EUV1O4ugWqM8JxDhh4Y2BIK1ebGReHjg0dLgEi13cc6ByKpuysoy5KPBSoxshkD7225X3M64rrhwA==");
+            args.Add("client_id", CLIENT_ID);
+            args.Add("client_secret", CLIENT_SECRET);
             args.Add("scope", "imodels:read");
 
             HttpContent body = new FormUrlEncodedContent(args);
 
-            using (var response = await client.PostAsync("https://ims.bentley.com/connect/token", body))
+            using (var response = await client.PostAsync(LOGIN_URL, body))
                 {
                 if (response.StatusCode == HttpStatusCode.TooManyRequests)
                     {
-                    // You should implement retry logic for TooManyRequests (429) errors and possibly others like GatewayTimeout or ServiceUnavailable
+                    Console.WriteLine("You should implement retry logic for TooManyRequests (429) errors and possibly others like GatewayTimeout or ServiceUnavailable");
+                    return false;
                     }
 
                 var responseContent = await response.Content.ReadAsStringAsync();
@@ -64,8 +70,14 @@ namespace ItwinProjectSampleApp
                         {
                         // Successful response. Deserialize the object returned. This is the full representation
                         // of the new instance that was just created. It will contain the new instance Id.
+                        var type = responsePayload["token_type"].ToString();
                         var token = responsePayload["access_token"].ToString();
-                        client.DefaultRequestHeaders.Add("Authorization", token);
+                        if (!string.IsNullOrEmpty(type) && !string.IsNullOrEmpty(token))
+                            {
+                            var tt = $"{type} {token}";
+                            client.DefaultRequestHeaders.Add("Authorization", tt);
+                            return true;
+                            }
                         }
                     else
                         {
@@ -76,10 +88,11 @@ namespace ItwinProjectSampleApp
                     }
                 else
                     {
-                    Console.WriteLine("Empty response");
+                    var error = "emppty loning responce";
+                    Console.WriteLine(error);
                     }
                 }
-            return true;
+            return false;
             }
 
 
@@ -104,7 +117,7 @@ namespace ItwinProjectSampleApp
             if ( response.StatusCode == HttpStatusCode.OK )
                 {
                 // Successful response. Deserialize the list of objects returned.
-                var containerName = $"{typeof(T).Name.ToLower()}s"; // The container is plural for lists
+                var containerName = $"{typeof(T).Name}s"; // The container is plural for lists
                 var instances = responsePayload[containerName];
                 responseMsg.Instances = new List<T>();
                 foreach ( var inst in instances )
