@@ -19,10 +19,15 @@ namespace ItwinProjectSampleApp
         private List<Project> _projects; // Projects that will be deleted in DisposeAsync
 
         #region Constructors
-        internal ProjectManager(string token)
+        internal ProjectManager()
             {
-            _endpointMgr = new EndpointManager(token);
+            _endpointMgr = new EndpointManager();
             _projects = new List<Project>();
+            }
+
+        public async Task<bool> Login()
+            {
+            return await _endpointMgr.Login();
             }
 
         public async ValueTask DisposeAsync()

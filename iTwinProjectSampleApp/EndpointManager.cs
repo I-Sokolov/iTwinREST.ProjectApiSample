@@ -24,19 +24,16 @@ namespace ItwinProjectSampleApp
         private const string API_BASE_URL = "https://api.bentley.com";
 
         #region Constructors
-        internal EndpointManager (string token)
+        internal EndpointManager()
             {
             client.DefaultRequestHeaders.Clear();
             client.DefaultRequestHeaders.Add("Accept", "application/vnd.bentley.itwin-platform.v1+json");
-            if (token!=null)
-                {
-                client.DefaultRequestHeaders.Add("Authorization", token);
-                }
             }
         #endregion
 
-        internal async Task<string> MakeLoginCall()
+        internal async Task<bool> Login()
             {
+            //https://developer.bentley.com/apis/overview/authorization/#authorizing-service-machine-to-machine
             //curl https://ims.bentley.com/connect/token -X POST
             //  --data-urlencode grant_type=client_credentials
             //  --data-urlencode client_id=<client_id>
@@ -82,7 +79,7 @@ namespace ItwinProjectSampleApp
                     Console.WriteLine("Empty response");
                     }
                 }
-            return "hhhh";
+            return true;
             }
 
 

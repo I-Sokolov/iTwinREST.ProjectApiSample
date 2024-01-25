@@ -17,26 +17,24 @@ namespace ItwinProjectSampleApp
         {
         static async Task Main (string[] args)          
             {
-            string token = await Login();
-
             DisplayMainIndex();
 
             // Retrieve the token using the TryIt button. https://developer.bentley.com/api-groups/administration/apis/projects/operations/create-project/
-            Console.WriteLine("\n\nCopy and paste the Authorization header from the 'Try It' sample in the APIM front-end:  ");
-            string authorizationHeader = Console.ReadLine();
-            Console.Clear();
+            //Console.WriteLine("\n\nCopy and paste the Authorization header from the 'Try It' sample in the APIM front-end:  ");
+            //string authorizationHeader = Console.ReadLine();
+            //Console.Clear();
+            //DisplayMainIndex();
 
-            DisplayMainIndex();
-
-            await using var projectMgr = new ProjectManager(authorizationHeader);
+            await using var projectMgr = new ProjectManager();
+            await projectMgr.Login();
 
             // Execute Project workflow. This will create/update/query an iTwin project
-            await projectMgr.ProjectManagementWorkflow();
+            //await projectMgr.ProjectManagementWorkflow();
 
             // Execute User Management workflow. This will create an iTwin project, create a project role and add a user to the project
             // with that role. The user must be a valid Bentley user so we we get it from the token to be sure. You can change this to another user.
-            var projectUserEmail = RetrieveEmailFromAuthHeader(authorizationHeader); 
-            await projectMgr.ProjectUserManagementWorkflow(projectUserEmail);
+            //var projectUserEmail = RetrieveEmailFromAuthHeader(authorizationHeader); 
+            //await projectMgr.ProjectUserManagementWorkflow(projectUserEmail);
             }
 
         #region Private Methods
@@ -59,14 +57,6 @@ namespace ItwinProjectSampleApp
             var email = token.Claims?.FirstOrDefault(x => x.Type.Equals("Email", StringComparison.OrdinalIgnoreCase))?.Value;
             return email;
             }
-
-
-        private static async Task<string> Login ()
-        {
-            var epm = new EndpointManager(null);
-            var token = await epm.MakeLoginCall();
-            return "";
-        }
         #endregion
     }
     }
