@@ -21,7 +21,7 @@ namespace ItwinProjectSampleApp
             {
             DisplayMainIndex();
 
-            // Retrieve the token using the TryIt button. https://developer.bentley.com/api-groups/administration/apis/projects/operations/create-project/
+            // Retrieve the _token using the TryIt button. https://developer.bentley.com/api-groups/administration/apis/projects/operations/create-project/
             //Console.WriteLine("\n\nCopy and paste the Authorization header from the 'Try It' sample in the APIM front-end:  ");
             //string authorizationHeader = Console.ReadLine();
             //Console.Clear();
@@ -34,12 +34,17 @@ namespace ItwinProjectSampleApp
             Trace.Assert(res);
 
             var iModels = await iModelsMan.GetiModels();
+            foreach (var imodel in iModels) 
+                { 
+                Console.WriteLine($"iModel: {imodel.displayName}\n");
+                break;
+                }
 
             // Execute Project workflow. This will create/update/query an iTwin project
             //await projectMgr.ProjectManagementWorkflow();
 
             // Execute User Management workflow. This will create an iTwin project, create a project role and add a user to the project
-            // with that role. The user must be a valid Bentley user so we we get it from the token to be sure. You can change this to another user.
+            // with that role. The user must be a valid Bentley user so we we get it from the _token to be sure. You can change this to another user.
             //var projectUserEmail = RetrieveEmailFromAuthHeader(authorizationHeader); 
             //await projectMgr.ProjectUserManagementWorkflow(projectUserEmail);
             }
@@ -58,7 +63,7 @@ namespace ItwinProjectSampleApp
             {
             var jwt = authorizationHeader?.Split(" ")[1]?.Trim();
             if (string.IsNullOrWhiteSpace(jwt))
-                throw new ApplicationException("The jwt token is incorrect.  Ensure that 'Bearer ' precedes the token in the header.");
+                throw new ApplicationException("The jwt _token is incorrect.  Ensure that 'Bearer ' precedes the _token in the header.");
             var handler = new JwtSecurityTokenHandler();
             var token = handler.ReadJwtToken(jwt);
             var email = token.Claims?.FirstOrDefault(x => x.Type.Equals("Email", StringComparison.OrdinalIgnoreCase))?.Value;

@@ -33,14 +33,15 @@ namespace iTwinProjectSampleApp
                     { "Prefer", "return=minimal" }
                 };
 
-            var responseMsg = await _endpointMgr.MakeGetCall<iModel>($"/imodels/??iTwinId={_projectId}", header);
+            var responseMsg = await _endpointMgr.MakeGetCall<iModel>($"/imodels/?iTwinId={_projectId}", header);
             if (responseMsg.Status != HttpStatusCode.OK)
                 throw new Exception($"{responseMsg.Status}: {responseMsg.ErrorDetails?.Code} - {responseMsg.ErrorDetails?.Message}");
 
-            Console.Write($" [Retrieved {responseMsg.Instances?.Count} iModels] (SUCCESS)");
+            Console.WriteLine($" [Retrieved {responseMsg.Instances?.Count} iModels] (SUCCESS)");
 
             return responseMsg.Instances;
 
             }
+        
         }
     }

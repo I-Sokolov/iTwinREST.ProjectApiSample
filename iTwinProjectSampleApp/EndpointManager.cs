@@ -22,20 +22,20 @@ namespace ItwinProjectSampleApp
         {
         private const string API_BASE_URL = "https://api.bentley.com";
 
-        private static readonly HttpClient client = new();
+        private static readonly HttpClient _client = new();
+
+        private string _token = null;
 
         #region Constructors
         internal EndpointManager()
             {
-            client.DefaultRequestHeaders.Clear();
-            client.DefaultRequestHeaders.Add("Accept", "application/vnd.bentley.itwin-platform.v2+json");
             }
         #endregion
 
         internal async Task<bool> Login()
             {
             //https://developer.bentley.com/apis/overview/authorization/#authorizing-service-machine-to-machine
-            //curl https://ims.bentley.com/connect/token -X POST
+            //curl https://ims.bentley.com/connect/_token -X POST
             //  --data-urlencode grant_type=client_credentials
             //  --data-urlencode client_id=<client_id>
             //  --data-urlencode client_secret=<client_secret>
@@ -53,7 +53,10 @@ namespace ItwinProjectSampleApp
 
             HttpContent body = new FormUrlEncodedContent(args);
 
-            using (var response = await client.PostAsync(LOGIN_URL, body))
+            _client.DefaultRequestHeaders.Clear();
+            _client.DefaultRequestHeaders.Add("Accept", "application/vnd.bentley.itwin-platform.v2+json");
+
+            using (var response = await _client.PostAsync(LOGIN_URL, body))
                 {
                 if (response.StatusCode == HttpStatusCode.TooManyRequests)
                     {
@@ -74,8 +77,7 @@ namespace ItwinProjectSampleApp
                         var token = responsePayload["access_token"].ToString();
                         if (!string.IsNullOrEmpty(type) && !string.IsNullOrEmpty(token))
                             {
-                            var tt = $"{type} {token}";
-                            client.DefaultRequestHeaders.Add("Authorization", tt);
+                            _token = $"{type} {token}";
                             return true;
                             }
                         }
@@ -98,11 +100,15 @@ namespace ItwinProjectSampleApp
 
         internal async Task<HttpGetResponseMessage<T>> MakeGetCall<T> (string relativeUrl, Dictionary<string, string> customHeaders = null)
             {
-            // Add any additional headers if applicable
-            AddCustomHeaders(client, customHeaders);
-
             // Construct full url and then make the GET call
-            using var response = await client.GetAsync($"{API_BASE_URL}{relativeUrl}");
+            var request = $"{API_BASE_URL}{relativeUrl}";
+
+            _client.DefaultRequestHeaders.Clear();
+            _client.DefaultRequestHeaders.Add("Authorization", _token);
+            _client.DefaultRequestHeaders.Add("Accept", "application/vnd.bentley.itwin-platform.v2+json");
+            AddCustomHeaders(_client, customHeaders);
+
+            using var response = await _client.GetAsync(request);
 
             if ( response.StatusCode == HttpStatusCode.TooManyRequests )
                 {
@@ -136,10 +142,10 @@ namespace ItwinProjectSampleApp
         internal async Task<HttpGetSingleResponseMessage<T>> MakeGetSingleCall<T> (string relativeUrl, Dictionary<string, string> customHeaders = null)
             {
             // Add any additional headers if applicable
-            AddCustomHeaders(client, customHeaders);
+            AddCustomHeaders(_client, customHeaders);
 
             // Construct full url and then make the GET call
-            using var response = await client.GetAsync($"{API_BASE_URL}{relativeUrl}");
+            using var response = await _client.GetAsync($"{API_BASE_URL}{relativeUrl}");
 
             if ( response.StatusCode == HttpStatusCode.TooManyRequests )
                 {
@@ -168,13 +174,13 @@ namespace ItwinProjectSampleApp
         internal async Task<HttpPostResponseMessage<T>> MakePostCall<T> (string relativeUrl, T propertyModel, Dictionary<string, string> customHeaders = null)
             {
             // Add any additional headers if applicable
-            AddCustomHeaders(client, customHeaders);
+            AddCustomHeaders(_client, customHeaders);
 
             var body = new StringContent(JsonSerializer.Serialize(propertyModel, JsonSerializerOptions), Encoding.UTF8, "application/json");
             HttpPostResponseMessage<T> responseMsg = new HttpPostResponseMessage<T>();
 
             // Construct full url and then make the POST call
-            using (var response = await client.PostAsync($"{API_BASE_URL}{relativeUrl}", body))
+            using (var response = await _client.PostAsync($"{API_BASE_URL}{relativeUrl}", body))
                 {
                 if (response.StatusCode == HttpStatusCode.TooManyRequests)
                     {
@@ -214,10 +220,10 @@ namespace ItwinProjectSampleApp
         internal async Task<HttpPostResponseMessage<T>> MakePostCall<T> (string relativeUrl, Dictionary<string, string> customHeaders = null)
             {
             // Add any additional headers if applicable
-            AddCustomHeaders(client, customHeaders);
+            AddCustomHeaders(_client, customHeaders);
 
             // Construct full url and then make the POST call
-            using var response = await client.PostAsync($"{API_BASE_URL}{relativeUrl}", null);
+            using var response = await _client.PostAsync($"{API_BASE_URL}{relativeUrl}", null);
 
             if ( response.StatusCode == HttpStatusCode.TooManyRequests )
                 {
@@ -246,10 +252,10 @@ namespace ItwinProjectSampleApp
         internal async Task<HttpPatchResponseMessage<T>> MakePatchCall<T> (string relativeUrl, object patchedObject, Dictionary<string, string> customHeaders = null)
             {
             // Add any additional headers if applicable
-            AddCustomHeaders(client, customHeaders);
+            AddCustomHeaders(_client, customHeaders);
 
             // Construct full url and then make the PATCH call
-            using var response = await client.PatchAsync($"{API_BASE_URL}{relativeUrl}",
+            using var response = await _client.PatchAsync($"{API_BASE_URL}{relativeUrl}",
                 new StringContent(JsonSerializer.Serialize(patchedObject, JsonSerializerOptions), Encoding.UTF8, "application/json-patch+json"));
             if ( response.StatusCode == HttpStatusCode.TooManyRequests )
                 {
@@ -279,10 +285,10 @@ namespace ItwinProjectSampleApp
         internal async Task<HttpResponseMessage<T>> MakeDeleteCall<T> (string relativeUrl, Dictionary<string, string> customHeaders = null)
             {
             // Add any additional headers if applicable
-            AddCustomHeaders(client, customHeaders);
+            AddCustomHeaders(_client, customHeaders);
 
             // Construct full url and then make the POST call
-            using var response = await client.DeleteAsync($"{API_BASE_URL}{relativeUrl}");
+            using var response = await _client.DeleteAsync($"{API_BASE_URL}{relativeUrl}");
             if ( response.StatusCode == HttpStatusCode.TooManyRequests )
                 {
                 // You should implement retry logic for TooManyRequests (429) errors and possibly others like GatewayTimeout or ServiceUnavailable
