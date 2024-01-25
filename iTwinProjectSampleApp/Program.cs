@@ -37,6 +37,13 @@ namespace ItwinProjectSampleApp
             foreach (var imodel in iModels) 
                 { 
                 Console.WriteLine($"iModel: {imodel.displayName}\n");
+
+                var changesets = await iModelsMan.GetChangesets(imodel);
+                foreach (var cs in changesets) 
+                    {
+                    Console.WriteLine($"Changeset #{cs.index} id {cs.id}");
+                    }
+
                 break;
                 }
 

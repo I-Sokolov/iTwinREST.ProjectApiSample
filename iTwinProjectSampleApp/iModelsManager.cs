@@ -28,10 +28,8 @@ namespace iTwinProjectSampleApp
 
         public async Task<List<iModel>> GetiModels()
             {
-            var header = new Dictionary<string, string>
-                {
-                    { "Prefer", "return=minimal" }
-                };
+            var header = new Dictionary<string, string>();
+            header.Add("Prefer", "return=minimal");
 
             var responseMsg = await _endpointMgr.MakeGetCall<iModel>($"/imodels/?iTwinId={_projectId}", header);
             if (responseMsg.Status != HttpStatusCode.OK)
@@ -43,5 +41,19 @@ namespace iTwinProjectSampleApp
 
             }
         
+        public async Task<List<changeset>>  GetChangesets(iModel imodel)
+            {
+            var header = new Dictionary<string, string>();
+            header.Add("Prefer", "return=representation");
+
+            var responseMsg = await _endpointMgr.MakeGetCall<changeset>($"/imodels/{imodel.id}/changesets?$orderBy=index desc&$top=1", header);
+            if (responseMsg.Status != HttpStatusCode.OK)
+                throw new Exception($"{responseMsg.Status}: {responseMsg.ErrorDetails?.Code} - {responseMsg.ErrorDetails?.Message}");
+
+            Console.WriteLine($" [Retrieved {responseMsg.Instances?.Count} iModels] (SUCCESS)");
+
+            return responseMsg.Instances;
+
+            }
         }
     }
