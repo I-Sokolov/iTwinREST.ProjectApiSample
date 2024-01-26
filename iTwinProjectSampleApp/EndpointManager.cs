@@ -88,7 +88,8 @@ namespace ItwinProjectSampleApp
                     Console.WriteLine(error);
                     }
                 }
-            return false;
+
+            throw new ApplicationException("Authorization failed");
             }
 
 

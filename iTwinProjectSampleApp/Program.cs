@@ -21,6 +21,16 @@ namespace ItwinProjectSampleApp
         {
         static async Task Main (string[] args)          
             {
+            try
+                {
+                ATPController controller = new ATPController();
+                await controller.Run();
+                }
+            catch (Exception ex) 
+                {
+                Console.WriteLine (ex);
+                }
+#if NOT_NOW
             DisplayMainIndex();
 
             // Retrieve the _token using the TryIt button. https://developer.bentley.com/api-groups/administration/apis/projects/operations/create-project/
@@ -80,6 +90,7 @@ namespace ItwinProjectSampleApp
             // with that role. The user must be a valid Bentley user so we we get it from the _token to be sure. You can change this to another user.
             //var projectUserEmail = RetrieveEmailFromAuthHeader(authorizationHeader); 
             //await projectMgr.ProjectUserManagementWorkflow(projectUserEmail);
+#endif
             }
 
         #region Private Methods
