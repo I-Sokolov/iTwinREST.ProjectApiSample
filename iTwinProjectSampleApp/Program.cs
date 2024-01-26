@@ -65,6 +65,7 @@ namespace ItwinProjectSampleApp
                         Console.WriteLine($"Named version {namedVers.id} : {namedVers.displayName} changeset {namedVers.changesetIndex}");
                         var chkpt = await iModelsMan.GetNamedVersionCheckpoint(imodel.id, namedVers.id);
                         var href = chkpt?._links?.download?.href;
+                        iModelsMan.DownloadFile(href, "E:\\downloads\\a.bim");
                         Console.WriteLine(href);
                         }
 

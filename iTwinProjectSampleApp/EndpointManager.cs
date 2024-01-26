@@ -26,12 +26,6 @@ namespace ItwinProjectSampleApp
 
         private string _token = null;
 
-        #region Constructors
-        internal EndpointManager()
-            {
-            }
-        #endregion
-
         internal async Task<bool> Login()
             {
             //https://developer.bentley.com/apis/overview/authorization/#authorizing-service-machine-to-machine
@@ -309,6 +303,33 @@ namespace ItwinProjectSampleApp
                 responseMsg.ErrorDetails = responsePayload["error"]?.ToObject<ErrorDetails>();
                 }
             return responseMsg;
+            }
+
+
+        internal void DownloadFile(string fileUrl, string localFilePath)
+            {
+            Console.WriteLine("");
+            Console.WriteLine($"Downloading {fileUrl}");
+            /*
+            //Console.WriteLine($"Authorization {_token.Substring(0, 50)}...");
+            Console.WriteLine("");
+
+            //HttpClient _client
+            _client.DefaultRequestHeaders.Clear();
+            //_client.DefaultRequestHeaders.Add("Authorization", _token);
+
+            using var response = await _client.GetAsync(fileUrl);
+
+            Console.WriteLine(response.ToString());
+
+
+            return false;
+            */
+            using (var webClient = new WebClient())
+                {
+                webClient.DownloadFile(fileUrl, localFilePath);
+                }
+           
             }
 
         #region Private Methods

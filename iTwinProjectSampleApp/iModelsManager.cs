@@ -107,5 +107,13 @@ namespace iTwinProjectSampleApp
 
             return responseMsg.Instance;
             }
+
+        internal void DownloadFile(string fileUrl, string localFilePath)
+            {
+            using (var webClient = new WebClient())
+                {
+                webClient.DownloadFile(fileUrl, localFilePath);
+                }
+            }
         }
     }
